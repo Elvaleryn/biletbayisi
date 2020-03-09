@@ -260,6 +260,9 @@ export default {
 
   &__items {
     cursor: pointer;
+    &:hover {
+      background-color: rgb(159, 205, 243);
+    }
   }
 }
 

@@ -15,13 +15,3 @@ export default {
   components: { FlightSearchBox, Navbar }
 };
 </script>
-
-<style lang="scss" scoped>
-.main-jumbotron {
-  background-image: linear-gradient(
-    to left,
-    rgb(11, 65, 114),
-    rgb(82, 153, 211)
-  );
-}
-</style>
