@@ -30,17 +30,24 @@
                 @input="fetchGidisAirports"
                 placeholder="Nereden"
                 @focus="gidisModal = true"
+                @keydown.down="nextItem()"
+                @keydown.up="previousItem()"
+                @keydown.enter.prevent="selectItemWithEnter()"
               ></b-form-input>
               <!--Nereden Airport List -->
               <div v-if="gidisModal">
-                <b-list-group class="airport-list">
+                <b-list-group class="airport-list" ref="scrollContainer">
                   <b-list-group-item
-                    v-for="airport in gidisAirports"
-                    v-text="airport.label"
+                    v-for="(airport, index) in gidisAirports"
                     :key="airport.id"
                     @click="setGidisState(airport.label)"
+                    ref="options"
+                    :class='{ "active" : currentIndexGidis === index }'
                     class="airport-list__items"
-                  ></b-list-group-item>
+                  >
+                    <strong>{{ airport.id }}</strong>
+                    {{ airport.label }} {{ index }}
+                  </b-list-group-item>
                 </b-list-group>
               </div>
             </b-input-group>
@@ -67,11 +74,13 @@
                 <b-list-group class="airport-list">
                   <b-list-group-item
                     v-for="airport in donusAirports"
-                    v-text="airport.label"
                     :key="airport.id"
                     @click="setDonusState(airport.label)"
                     class="airport-list__items"
-                  ></b-list-group-item>
+                  >
+                    <strong>{{ airport.id }}</strong>
+                    {{ airport.label }}
+                  </b-list-group-item>
                 </b-list-group>
               </div>
             </b-input-group>
@@ -172,6 +181,7 @@ export default {
       gidisModal: false,
       donusState: "",
       donusModal: false,
+      currentIndexGidis: -1,
       /*  */
       selectedYetiskin: "B",
       selectedCocuk: "A",
@@ -185,6 +195,7 @@ export default {
         { item: "F", name: "5" },
         { item: "G", name: "6" }
       ]
+      /*  */
     };
   },
 
@@ -199,14 +210,13 @@ export default {
       const url = "https://tumhy.com/autocomplete.php?term=" + value;
       axios.get(url).then(res => {
         this.gidisAirports = res.data;
-        console.log(this.gidisAirports);
+        this.currentIndexGidis = -1;
       });
     },
     fetchDonusAirports(value) {
       const url = "https://tumhy.com/autocomplete.php?term=" + value;
       axios.get(url).then(res => {
         this.donusAirports = res.data;
-        console.log(this.donusAirports);
       });
     },
     setGidisState(state) {
@@ -216,6 +226,33 @@ export default {
     setDonusState(state) {
       this.donusState = state;
       this.donusModal = false;
+    },
+    nextItem() {
+      if(this.currentIndexGidis < this.gidisAirports.length - 1) { 
+        this.currentIndexGidis++;
+      } else {
+        this.currentIndexGidis = this.gidisAirports.length - 1;
+      }
+      this.fixScrolling();
+      console.log(this.currentIndexGidis); 
+    },
+    previousItem() {
+      if(this.currentIndexGidis !== -1) { 
+        this.currentIndexGidis--;
+      } else {
+        this.currentIndexGidis = -1;
+      }
+      this.fixScrolling();
+      console.log(this.currentIndexGidis);
+    },
+    selectItemWithEnter() {
+      if(this.gidisAirports[this.currentIndexGidis]) {
+        this.setGidisState(this.gidisAirports[this.currentIndexGidis].label);
+      }
+    },
+    fixScrolling(){
+      const liH = this.$refs.options[this.currentIndexGidis].clientHeight;
+      this.$refs.scrollContainer.scrollTop = liH * this.currentIndexGidis;
     }
   }
 };
@@ -261,6 +298,9 @@ export default {
   &__items {
     cursor: pointer;
     &:hover {
+      background-color: rgb(159, 205, 243);
+    }
+    &.active {
       background-color: rgb(159, 205, 243);
     }
   }
